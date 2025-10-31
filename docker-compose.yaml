@@ -41,13 +41,21 @@ services:
       - coolify_proxy_network
     labels:
       - "traefik.enable=true"
-      # Priorités hautes pour "gagner" contre la règle de Coolify
+      # --- Règle WebSocket (Priorité 200) ---
       - "traefik.http.routers.baserow-ws.rule=Host(`baserow.emeraudeia.fr`) && PathPrefix(`/api/ws`)"
       - "traefik.http.routers.baserow-ws.priority=200"
       - "traefik.http.routers.baserow-ws.service=baserow-backend-svc"
+      - "traefik.http.routers.baserow-ws.entrypoints=https" # <-- LIGNE AJOUTÉE
+      - "traefik.http.routers.baserow-ws.tls=true"        # <-- LIGNE AJOUTÉE
+
+      # --- Règle API (Priorité 150) ---
       - "traefik.http.routers.baserow-api.rule=Host(`baserow.emeraudeia.fr`) && PathPrefix(`/api`)"
       - "traefik.http.routers.baserow-api.priority=150"
       - "traefik.http.routers.baserow-api.service=baserow-backend-svc"
+      - "traefik.http.routers.baserow-api.entrypoints=https" # <-- LIGNE AJOUTÉE
+      - "traefik.http.routers.baserow-api.tls=true"        # <-- LIGNE AJOUTÉE
+
+      # --- Définition du Service Backend ---
       - "traefik.http.services.baserow-backend-svc.loadbalancer.server.port=8000"
       - "traefik.http.services.baserow-backend-svc.loadbalancer.sticky.cookie=true"
 
