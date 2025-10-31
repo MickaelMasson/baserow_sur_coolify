@@ -250,6 +250,3 @@ volumes:
 networks:
   baserow_net:
     driver: bridge
-  coolify_proxy_network: 
-    external: true
-    name: coolify
