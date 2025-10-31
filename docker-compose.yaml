@@ -56,9 +56,22 @@ services:
       - "traefik.http.routers.baserow-api.tls=true"
       - "traefik.http.routers.baserow-api.service=baserow-backend-svc"
       
-      # --- Définition du Service Backend ---
+      # --- Règle Frontend (Priorité 1) ---
+      - "traefik.http.routers.baserow-frontend-https.rule=Host(`baserow.emeraudeia.fr`)"
+      - "traefik.http.routers.baserow-frontend-https.priority=1"
+      - "traefik.http.routers.baserow-frontend-https.entrypoints=https"
+      - "traefik.http.routers.baserow-frontend-https.tls=true"
+      - "traefik.http.routers.baserow-frontend-https.service=baserow-frontend-svc"
+
+      # --- Règle HTTP -> HTTPS Redirect ---
+      - "traefik.http.routers.baserow-frontend-http.rule=Host(`baserow.emeraudeia.fr`)"
+      - "traefik.http.routers.baserow-frontend-http.entrypoints=http"
+      - "traefik.http.routers.baserow-frontend-http.middlewares=coolify-redirect-to-https@docker" # Assure que le middleware de Coolify est utilisé
+
+      # --- Définitions des Services ---
       - "traefik.http.services.baserow-backend-svc.loadbalancer.server.port=8000"
       - "traefik.http.services.baserow-backend-svc.loadbalancer.sticky.cookie=true"
+      - "traefik.http.services.baserow-frontend-svc.loadbalancer.server.port=3000"
 
   web-frontend:
     image: baserow/web-frontend:1.34.2
@@ -77,24 +90,7 @@ services:
       interval: 30s
       timeout: 5s
       retries: 3
-    labels:
-      # --- LABELS AJOUTÉS POUR CORRIGER LE BAD GATEWAY ---
-      - "traefik.enable=true"
-      
-      # --- Règle Frontend (Priorité 1) ---
-      - "traefik.http.routers.baserow-frontend-https.rule=Host(`baserow.emeraudeia.fr`)"
-      - "traefik.http.routers.baserow-frontend-https.priority=1"
-      - "traefik.http.routers.baserow-frontend-https.entrypoints=https"
-      - "traefik.http.routers.baserow-frontend-https.tls=true"
-      - "traefik.http.routers.baserow-frontend-https.service=baserow-frontend-svc"
-
-      # --- Règle HTTP -> HTTPS Redirect ---
-      - "traefik.http.routers.baserow-frontend-http.rule=Host(`baserow.emeraudeia.fr`)"
-      - "traefik.http.routers.baserow-frontend-http.entrypoints=http"
-      - "traefik.http.routers.baserow-frontend-http.middlewares=coolify-redirect-to-https@docker"
-
-      # --- Définition du Service Frontend ---
-      - "traefik.http.services.baserow-frontend-svc.loadbalancer.server.port=3000"
+    # PAS DE LABELS ICI - Tout est géré depuis le 'backend'
 
   celery:
     image: baserow/backend:1.34.2
