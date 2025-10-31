@@ -38,6 +38,7 @@ services:
         condition: service_healthy
     networks:
       - baserow_net
+      - coolify_proxy_network
     labels:
       - "traefik.enable=true"
       
@@ -65,7 +66,7 @@ services:
       # --- Règle HTTP -> HTTPS Redirect ---
       - "traefik.http.routers.baserow-frontend-http.rule=Host(`baserow.emeraudeia.fr`)"
       - "traefik.http.routers.baserow-frontend-http.entrypoints=http"
-      - "traefik.http.routers.baserow-frontend-http.middlewares=coolify-redirect-to-https@docker" # Assure que le middleware de Coolify est utilisé
+      - "traefik.http.routers.baserow-frontend-http.middlewares=coolify-redirect-to-https@docker"
 
       # --- Définitions des Services ---
       - "traefik.http.services.baserow-backend-svc.loadbalancer.server.port=8000"
@@ -250,3 +251,6 @@ volumes:
 networks:
   baserow_net:
     driver: bridge
+  coolify_proxy_network: 
+    external: true
+    name: coolify
